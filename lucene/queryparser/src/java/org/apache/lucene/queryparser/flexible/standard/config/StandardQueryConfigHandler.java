@@ -183,6 +183,13 @@ public class StandardQueryConfigHandler extends QueryConfigHandler {
      */
     final public static ConfigurationKey<Map<String,NumericConfig>> NUMERIC_CONFIG_MAP = ConfigurationKey.newInstance();
     
+    /**
+     * Key used to set whether phrase queries auto generation is supported
+     * 
+     * @see StandardQueryParser#setAutoGeneratePhraseQueries(boolean)
+     * @see StandardQueryParser#getAutoGeneratePhraseQueries()
+     */
+    final public static ConfigurationKey<Boolean> AUTO_GENERATE_PHRASE_QUERIES = ConfigurationKey.newInstance();
   }
   
   /**
@@ -210,6 +217,7 @@ public class StandardQueryConfigHandler extends QueryConfigHandler {
     set(ConfigurationKeys.LOCALE, Locale.getDefault());
     set(ConfigurationKeys.MULTI_TERM_REWRITE_METHOD, MultiTermQuery.CONSTANT_SCORE_AUTO_REWRITE_DEFAULT);
     set(ConfigurationKeys.FIELD_DATE_RESOLUTION_MAP, new HashMap<CharSequence, DateTools.Resolution>());
+    set(ConfigurationKeys.AUTO_GENERATE_PHRASE_QUERIES, false);
     
   }
 

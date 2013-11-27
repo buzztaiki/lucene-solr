@@ -541,4 +541,13 @@ public class StandardQueryParser extends QueryParserHelper implements CommonQuer
     getQueryConfigHandler().set(ConfigurationKeys.FIELD_DATE_RESOLUTION_MAP, dateRes);
   }
   
+  @Override
+  public void setAutoGeneratePhraseQueries(boolean autoGeneratePhraseQueries) {
+    getQueryConfigHandler().set(ConfigurationKeys.AUTO_GENERATE_PHRASE_QUERIES, autoGeneratePhraseQueries);
+  }
+  
+  @Override
+  public boolean getAutoGeneratePhraseQueries() {
+    return getQueryConfigHandler().get(ConfigurationKeys.AUTO_GENERATE_PHRASE_QUERIES);
+  }
 }

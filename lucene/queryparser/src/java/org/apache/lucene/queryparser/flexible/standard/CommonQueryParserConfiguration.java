@@ -155,6 +155,19 @@ public interface CommonQueryParserConfiguration {
    */
   public void setDateResolution(DateTools.Resolution dateResolution);
   
-  
-  
+  /**
+   * Set to true if phrase queries will be automatically generated
+   * when the analyzer returns more than one term from whitespace
+   * delimited text.
+   * NOTE: this behavior may not be suitable for all languages.
+   * <p>
+   * Set to false if phrase queries should only be generated when
+   * surrounded by double quotes.
+   */
+  public void setAutoGeneratePhraseQueries(boolean autoGeneratePhraseQueries);
+
+  /**
+   * @see setAutoGeneratePhraseQueries(boolean)
+   */
+  public boolean getAutoGeneratePhraseQueries();
 }
