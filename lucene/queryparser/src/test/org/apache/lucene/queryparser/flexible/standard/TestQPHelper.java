@@ -1345,4 +1345,26 @@ public class TestQPHelper extends LuceneTestCase {
 
   }
 
+  public void testAutoGeneratePhraseQueries() throws Exception {
+    // individual CJK chars as terms
+    SimpleCJKAnalyzer analyzer = new SimpleCJKAnalyzer();
+    StandardQueryParser parser = getParser(analyzer);
+    parser.setAutoGeneratePhraseQueries(true);
+
+    PhraseQuery expectedPQ = new PhraseQuery();
+    expectedPQ.add(new Term("field", "中"));
+    expectedPQ.add(new Term("field", "国"));
+
+    assertEquals(expectedPQ, parser.parse("中国", "field"));
+
+    BooleanQuery expectedBQ = new BooleanQuery();
+    expectedBQ.add(new TermQuery(new Term("field", "中")), BooleanClause.Occur.MUST);
+    PhraseQuery inner = new PhraseQuery();
+    inner.add(new Term("field", "中"));
+    inner.add(new Term("field", "国"));
+    expectedBQ.add(inner, BooleanClause.Occur.MUST);
+
+    assertEquals(expectedBQ, parser.parse("中 AND 中国", "field"));
+  }
+
 }

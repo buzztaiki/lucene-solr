@@ -73,6 +73,8 @@ public class AnalyzerQueryNodeProcessor extends QueryNodeProcessorImpl {
 
   private boolean positionIncrementsEnabled;
 
+  private boolean autoGeneratePhraseQueries;
+
   public AnalyzerQueryNodeProcessor() {
     // empty constructor
   }
@@ -90,10 +92,10 @@ public class AnalyzerQueryNodeProcessor extends QueryNodeProcessorImpl {
           this.positionIncrementsEnabled = positionIncrementsEnabled;
       }
 
-      if (this.analyzer != null) {
-        return super.process(queryTree);
-      }
+      Boolean autoGeneratePhraseQueries = getQueryConfigHandler().get(ConfigurationKeys.AUTO_GENERATE_PHRASE_QUERIES);
+      this.autoGeneratePhraseQueries = (autoGeneratePhraseQueries != null ? autoGeneratePhraseQueries : false);
 
+      return super.process(queryTree);
     }
 
     return queryTree;
@@ -118,6 +120,8 @@ public class AnalyzerQueryNodeProcessor extends QueryNodeProcessorImpl {
       int numTokens = 0;
       int positionCount = 0;
       boolean severalTokensAtSamePosition = false;
+
+      boolean quoted = (node instanceof QuotedFieldQueryNode) || autoGeneratePhraseQueries;
       
       try (TokenStream source = this.analyzer.tokenStream(field, text)) {
         source.reset();
@@ -177,8 +181,8 @@ public class AnalyzerQueryNodeProcessor extends QueryNodeProcessorImpl {
 
         return fieldNode;
 
-      } else if (severalTokensAtSamePosition || !(node instanceof QuotedFieldQueryNode)) {
-        if (positionCount == 1 || !(node instanceof QuotedFieldQueryNode)) {
+      } else if (severalTokensAtSamePosition || !quoted) {
+        if (positionCount == 1 || !quoted) {
           // no phrase query:
           LinkedList<QueryNode> children = new LinkedList<QueryNode>();
 
