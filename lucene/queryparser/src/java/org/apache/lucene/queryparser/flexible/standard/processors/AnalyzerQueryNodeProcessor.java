@@ -95,7 +95,9 @@ public class AnalyzerQueryNodeProcessor extends QueryNodeProcessorImpl {
       Boolean autoGeneratePhraseQueries = getQueryConfigHandler().get(ConfigurationKeys.AUTO_GENERATE_PHRASE_QUERIES);
       this.autoGeneratePhraseQueries = (autoGeneratePhraseQueries != null ? autoGeneratePhraseQueries : false);
 
-      return super.process(queryTree);
+      if (this.analyzer != null) {
+        return super.process(queryTree);
+      }
     }
 
     return queryTree;

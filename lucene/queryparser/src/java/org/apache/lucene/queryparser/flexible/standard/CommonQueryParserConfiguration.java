@@ -170,4 +170,6 @@ public interface CommonQueryParserConfiguration {
    * @see #setAutoGeneratePhraseQueries(boolean)
    */
   public boolean getAutoGeneratePhraseQueries();
+  
+  
 }
