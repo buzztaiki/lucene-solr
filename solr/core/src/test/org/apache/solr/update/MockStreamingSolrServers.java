@@ -19,7 +19,9 @@ package org.apache.solr.update;
 
 import java.io.IOException;
 import java.net.ConnectException;
+import java.net.SocketException;
 
+import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.client.solrj.SolrRequest;
 import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -31,7 +33,7 @@ public class MockStreamingSolrServers extends StreamingSolrServers {
   public static Logger log = LoggerFactory
       .getLogger(MockStreamingSolrServers.class);
   
-  public enum Exp {CONNECT_EXCEPTION};
+  public enum Exp {CONNECT_EXCEPTION, SOCKET_EXCEPTION};
   
   private volatile Exp exp = null;
   
@@ -53,7 +55,8 @@ public class MockStreamingSolrServers extends StreamingSolrServers {
     switch (exp) {
       case CONNECT_EXCEPTION:
         return new ConnectException();
-      
+      case SOCKET_EXCEPTION:
+        return new SocketException();
       default:
         break;
     }
@@ -72,7 +75,11 @@ public class MockStreamingSolrServers extends StreamingSolrServers {
     public NamedList<Object> request(SolrRequest request)
         throws SolrServerException, IOException {
       if (exp != null) {
-        throw exception();
+        if (LuceneTestCase.random().nextBoolean()) {
+          throw exception();
+        } else {
+          throw new SolrServerException(exception());
+        }
       }
       
       return solrServer.request(request);

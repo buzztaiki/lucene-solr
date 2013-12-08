@@ -27,6 +27,7 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
 import org.apache.solr.client.solrj.request.CoreAdminRequest.RequestRecovery;
 import org.apache.solr.common.SolrException;
+import org.apache.solr.common.SolrException.ErrorCode;
 import org.apache.solr.common.cloud.ZkCoreNodeProps;
 import org.apache.solr.common.cloud.ZkNodeProps;
 import org.apache.solr.common.cloud.ZkStateReader;
@@ -93,6 +94,7 @@ public class SyncStrategy {
         log.error("No UpdateLog found - cannot sync");
         return false;
       }
+
       success = syncReplicas(zkController, core, leaderProps);
     } finally {
       SolrRequestInfo.clearRequestInfo();

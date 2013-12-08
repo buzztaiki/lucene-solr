@@ -17,11 +17,14 @@ package org.apache.solr.cloud;
  * limitations under the License.
  */
 
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import javax.servlet.Filter;
 
 import org.apache.lucene.util.LuceneTestCase;
 import org.apache.solr.client.solrj.SolrServer;
@@ -226,6 +229,21 @@ public class ChaosMonkey {
   }
   
   public static void kill(CloudJettyRunner cjetty) throws Exception {
+    FilterHolder filterHolder = cjetty.jetty.getDispatchFilter();
+    if (filterHolder != null) {
+      Filter filter = filterHolder.getFilter();
+      if (filter != null) {
+        CoreContainer cores = ((SolrDispatchFilter) filter).getCores();
+        if (cores != null) {
+          int zklocalport = ((InetSocketAddress) cores.getZkController()
+              .getZkClient().getSolrZooKeeper().getSocketAddress()).getPort();
+          IpTables.blockPort(zklocalport);
+        }
+      }
+    }
+
+    IpTables.blockPort(cjetty.jetty.getLocalPort());
+    
     JettySolrRunner jetty = cjetty.jetty;
     monkeyLog("kill shard! " + jetty.getLocalPort());
     
@@ -435,7 +453,7 @@ public class ChaosMonkey {
   
   // synchronously starts and stops shards randomly, unless there is only one
   // active shard up for a slice or if there is one active and others recovering
-  public void startTheMonkey(boolean killLeaders, final boolean startDeadPool, final int roundPauseUpperLimit) {
+  public void startTheMonkey(boolean killLeaders, final int roundPauseUpperLimit) {
     if (!MONKEY_ENABLED) {
       monkeyLog("The Monkey is disabled and will not start");
       return;
@@ -503,16 +521,6 @@ public class ChaosMonkey {
         monkeyLog("I ran for " + (System.currentTimeMillis() - startTime)/1000.0f + "sec. I stopped " + stops + " and I started " + starts
             + ". I also expired " + expires.get() + " and caused " + connloss
             + " connection losses");
-        if (startDeadPool) {
-          // starting down nodes
-          for (CloudJettyRunner jetty : deadPool) {
-            try {
-              if (jetty.jetty.isStopped()) ChaosMonkey.start(jetty.jetty);
-            } catch (Exception e) {
-              log.error("", e);
-            }
-          }
-        }
       }
     };
     monkeyThread.start();
@@ -544,7 +552,8 @@ public class ChaosMonkey {
   }
   
   public static boolean start(JettySolrRunner jetty) throws Exception {
-    
+
+    IpTables.unblockPort(jetty.getLocalPort());
     try {
       jetty.start();
     } catch (Exception e) {
@@ -562,6 +571,18 @@ public class ChaosMonkey {
           // we coud not get the port
           jetty.stop();
           return false;
+        }
+      }
+    }
+    FilterHolder filterHolder = jetty.getDispatchFilter();
+    if (filterHolder != null) {
+      Filter filter = filterHolder.getFilter();
+      if (filter != null) {
+        CoreContainer cores = ((SolrDispatchFilter) filter).getCores();
+        if (cores != null) {
+          int zklocalport = ((InetSocketAddress) cores.getZkController()
+              .getZkClient().getSolrZooKeeper().getSocketAddress()).getPort();
+          IpTables.unblockPort(zklocalport);
         }
       }
     }
